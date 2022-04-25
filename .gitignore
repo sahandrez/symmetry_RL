@@ -1,0 +1,14 @@
+__pycache__/
+.ipynb_checkpoints/
+runs*/
+logs*/
+debug*/
+.idea/
+plots/
+*outputs/
+*.egg-info
+curves/
+exp*/
+rliable_data/
+*.png
+*.pdf

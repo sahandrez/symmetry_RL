@@ -1,4 +1,4 @@
-<mujoco model="box">
+<mujoco model="capsule">
     <include file="./common/visual.xml"/>
     <include file="./common/skybox.xml"/>
     <include file="./common/materials.xml"/>
@@ -16,7 +16,7 @@
             <joint name="hinge_1" type="hinge" axis="1 0 0"  damping="0.1"/>
             <joint name="hinge_2" type="hinge" axis="0 1 0"  damping="0.1"/>
             <joint name="hinge_3" type="hinge" axis="0 0 1"  damping="0.1"/>
-            <geom name="base" material="self" type="box" pos="0 0 0" size="0.3 0.3 0.3" mass="1"/>
+            <geom name="base" material="self" type="capsule" pos="0 0 0" size="0.15 0.3" mass="1"/>
         </body>
     </worldbody>
 

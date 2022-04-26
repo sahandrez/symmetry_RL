@@ -43,7 +43,6 @@ setup(
         'dm-control',
         'absl-py>=0.7.0',
         'dm-env',
-        'dm-tree != 0.1.2',
         'future',
         'glfw',
         'labmaze',

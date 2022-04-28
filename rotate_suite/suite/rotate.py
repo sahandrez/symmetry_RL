@@ -8,6 +8,7 @@ from dm_control.rl import control
 from dm_control.suite import base
 from rotate_suite.suite import common
 from dm_control.utils import containers
+import dm_control.mujoco.wrapper.mjbindings.enums as enums
 
 
 _DEFAULT_TIME_LIMIT = 20
@@ -22,39 +23,106 @@ def get_model_and_assets(object_type):
     return common.read_model(f'assets/{object_type}.xml'), common.ASSETS
 
 
-def make_task(time_limit=_DEFAULT_TIME_LIMIT, object_type='box',
-              random=None, environment_kwargs=None, render_kwargs=None):
+def make_task(time_limit=_DEFAULT_TIME_LIMIT,
+              object_type='box',
+              random=None,
+              randomize_goal=False,
+              randomize_model_shape=False,
+              randomize_model_color=False,
+              environment_kwargs=None,
+              render_kwargs=None):
     """Returns a rotate task ."""
     assert object_type in OBJECT_TYPES, f"Available object types are {OBJECT_TYPES}"
     physics = Physics.from_xml_string(*get_model_and_assets(object_type))
-    task = Rotate(random=random, randomize_goal=False, render_kwargs=render_kwargs)
+    task = Rotate(random=random,
+                  randomize_goal=randomize_goal,
+                  randomize_model_shape=randomize_model_shape,
+                  randomize_model_color=randomize_model_color,
+                  render_kwargs=render_kwargs)
     environment_kwargs = environment_kwargs or {}
     return control.Environment(
         physics, task, time_limit=time_limit, **environment_kwargs)
 
 
+def assert_task_kwargs(**kwargs):
+    assert (
+            'object_type' not in kwargs
+            and 'randomize_goal' not in kwargs
+            and 'randomize_model_shape' not in kwargs
+            and 'randomize_model_color' not in kwargs
+    ), "Invalid kwargs."
+
+
 @SUITE.add('rotate')
 def box_easy(**kwargs):
-    assert 'object_type' not in kwargs
+    assert_task_kwargs(**kwargs)
     return make_task(object_type='box', **kwargs)
 
 
 @SUITE.add('rotate')
 def capsule_easy(**kwargs):
-    assert 'object_type' not in kwargs
+    assert_task_kwargs(**kwargs)
     return make_task(object_type='capsule', **kwargs)
 
 
 @SUITE.add('rotate')
 def cylinder_easy(**kwargs):
-    assert 'object_type' not in kwargs
+    assert_task_kwargs(**kwargs)
     return make_task(object_type='cylinder', **kwargs)
 
 
 @SUITE.add('rotate')
 def ellipsoid_easy(**kwargs):
-    assert 'object_type' not in kwargs
+    assert_task_kwargs(**kwargs)
     return make_task(object_type='ellipsoid', **kwargs)
+
+
+@SUITE.add('rotate')
+def box_medium(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='box', randomize_model_shape=True, **kwargs)
+
+
+@SUITE.add('rotate')
+def capsule_medium(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='capsule', randomize_model_shape=True, **kwargs)
+
+
+@SUITE.add('rotate')
+def cylinder_medium(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='cylinder', randomize_model_shape=True, **kwargs)
+
+
+@SUITE.add('rotate')
+def ellipsoid_medium(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='ellipsoid', randomize_model_shape=True, **kwargs)
+
+
+@SUITE.add('rotate')
+def box_hard(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='box', randomize_model_color=True, **kwargs)
+
+
+@SUITE.add('rotate')
+def capsule_hard(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='capsule', randomize_model_color=True, **kwargs)
+
+
+@SUITE.add('rotate')
+def cylinder_hard(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='cylinder', randomize_model_color=True, **kwargs)
+
+
+@SUITE.add('rotate')
+def ellipsoid_hard(**kwargs):
+    assert_task_kwargs(**kwargs)
+    return make_task(object_type='ellipsoid', randomize_model_color=True, **kwargs)
 
 
 class Physics(mujoco.Physics):
@@ -68,8 +136,12 @@ class Physics(mujoco.Physics):
 class Rotate(base.Task):
     """A Rotate `Task` to swing up and balance the pole."""
 
-    def __init__(self, random=None, randomize_goal=False,
-                 observation_key='pixels', render_kwargs=None):
+    def __init__(self, random=None,
+                 randomize_goal=False,
+                 randomize_model_shape=False,
+                 randomize_model_color=False,
+                 observation_key='pixels',
+                 render_kwargs=None):
         """Initialize an instance of `Rotate`."""
         super().__init__(random=random)
         if render_kwargs is None:
@@ -78,6 +150,8 @@ class Rotate(base.Task):
             render_kwargs['camera_id'] = 'lookat'
 
         self.randomize_goal = randomize_goal
+        self.randomize_model_shape = randomize_model_shape
+        self.randomize_model_color = randomize_model_color
         self.render_kwargs = render_kwargs
         self._observation_key = observation_key
         self._reward_coeff = 0.1
@@ -95,10 +169,15 @@ class Rotate(base.Task):
 
         """
         if self.randomize_goal:
-            # TODO: Add randomized goals for the hard task
             raise NotImplementedError
         else:
             goal = [0.0, 0.0, 0.0]
+
+        if self.randomize_model_shape:
+            self.set_random_model_shape(physics)
+
+        if self.randomize_model_color:
+            self.set_random_model_color(physics)
 
         # Set the goal image
         physics.named.data.qpos['hinge_1'] = goal[0]
@@ -134,3 +213,26 @@ class Rotate(base.Task):
         goal_dist = np.abs(self._goal_image - self._current_obs).mean()
         reward = 1.0 - np.tanh(self._reward_coeff * goal_dist)
         return reward
+
+    def set_random_model_shape(self, physics):
+        obj_type = physics.named.model.geom_type['base']
+        if obj_type in [enums.mjtGeom.mjGEOM_BOX]:
+            length = np.random.uniform(0.2, 0.4)
+            random_size = np.array([length, length, length])
+        elif obj_type in [enums.mjtGeom.mjGEOM_CAPSULE, enums.mjtGeom.mjGEOM_CYLINDER]:
+            # Size for these geom types need a dummy variable at the end
+            radius = np.random.uniform(0.15, 0.4)
+            length = np.random.uniform(0.2, 0.35)
+            random_size = np.array([radius, length, 0.0])
+        elif obj_type in [enums.mjtGeom.mjGEOM_ELLIPSOID]:
+            random_size = np.random.uniform(0.2, 0.5, size=(3,))
+        else:
+            raise NotImplementedError
+        physics.named.model.geom_size['base'] = random_size
+
+
+    def set_random_model_color(self, physics):
+        random_color = np.random.uniform(0., 1., size=(4,))
+        random_color[-1] = 1.
+        physics.named.model.geom_rgba['base'] = random_color
+

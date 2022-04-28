@@ -73,7 +73,7 @@ class Rotate(base.Task):
         """Initialize an instance of `Rotate`."""
         super().__init__(random=random)
         if render_kwargs is None:
-            render_kwargs = {}
+            render_kwargs = dict(height=84, width=84)
         if 'camera_id' not in render_kwargs.keys():
             render_kwargs['camera_id'] = 'lookat'
 

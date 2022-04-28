@@ -21,8 +21,8 @@
     </worldbody>
 
     <actuator>
-        <motor name="torque_1" joint="hinge_1" gear="1" ctrlrange="-1 1" ctrllimited="true"/>
-        <motor name="torque_2" joint="hinge_2" gear="1" ctrlrange="-1 1" ctrllimited="true"/>
-        <motor name="torque_3" joint="hinge_3" gear="1" ctrlrange="-1 1" ctrllimited="true"/>
+        <motor name="torque_1" joint="hinge_1" gear="0.05" ctrlrange="-1 1" ctrllimited="true"/>
+        <motor name="torque_2" joint="hinge_2" gear="0.05" ctrlrange="-1 1" ctrllimited="true"/>
+        <motor name="torque_3" joint="hinge_3" gear="0.05" ctrlrange="-1 1" ctrllimited="true"/>
     </actuator>
 </mujoco>

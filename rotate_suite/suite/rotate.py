@@ -155,6 +155,8 @@ class Rotate(base.Task):
         self.render_kwargs = render_kwargs
         self._observation_key = observation_key
         self._reward_coeff = 0.1
+        self._success_reward = 1000.0
+        self._time_step_reward = -1.0
 
         self._current_obs = None
         self._goal_image = None
@@ -211,7 +213,7 @@ class Rotate(base.Task):
 
     def get_reward(self, physics):
         goal_dist = np.abs(self._goal_image - self._current_obs).mean()
-        reward = 1.0 - np.tanh(self._reward_coeff * goal_dist)
+        reward = self._time_step_reward + self._success_reward * (1.0 - np.tanh(self._reward_coeff * goal_dist))
         return reward
 
     def set_random_model_shape(self, physics):

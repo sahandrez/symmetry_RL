@@ -3,10 +3,8 @@
     <include file="./common/skybox.xml"/>
     <include file="./common/materials.xml"/>
 
-    <option timestep="0.005">
-        <flag contact="disable"/>
-    </option>
-
+    <option timestep="0.01" />
+    
     <worldbody>
         <light name="light" pos="0 0 2"/>
         <geom name="floor" size="2 2 .2" type="plane" material="grid"/>

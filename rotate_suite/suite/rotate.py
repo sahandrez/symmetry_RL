@@ -7,7 +7,7 @@ from dm_control import mujoco
 from dm_control.rl import control
 from dm_control.suite import base
 from rotate_suite.suite import common
-from dm_control.utils import containers
+from dm_control.utils import containers, transformations
 import dm_control.mujoco.wrapper.mjbindings.enums as enums
 
 
@@ -173,7 +173,8 @@ class Rotate(base.Task):
         if self.randomize_goal:
             raise NotImplementedError
         else:
-            goal = [0.0, 0.0, 0.0]
+            # goal = [0.0, 0.0, 0.0]
+            goal = transformations.euler_to_quat([0., 0., 0.])
 
         if self.randomize_model_shape:
             self.set_random_model_shape(physics)
@@ -182,15 +183,12 @@ class Rotate(base.Task):
             self.set_random_model_color(physics)
 
         # Set the goal image
-        physics.named.data.qpos['hinge_1'] = goal[0]
-        physics.named.data.qpos['hinge_2'] = goal[1]
-        physics.named.data.qpos['hinge_3'] = goal[2]
+        physics.named.data.qpos['ball_1'] = goal
         self._goal_image = self.get_observation(physics)[self._observation_key]
 
         # Set the initial orientation of the object
-        physics.named.data.qpos['hinge_1'] = self.random.uniform(-np.pi, np.pi)
-        physics.named.data.qpos['hinge_2'] = self.random.uniform(-np.pi, np.pi)
-        physics.named.data.qpos['hinge_3'] = self.random.uniform(-np.pi, np.pi)
+        init_euler = self.random.uniform(-np.pi, np.pi, size=(3,))
+        physics.named.data.qpos['ball_1'] = transformations.euler_to_quat(init_euler)
 
         super().initialize_episode(physics)
 
@@ -231,7 +229,6 @@ class Rotate(base.Task):
         else:
             raise NotImplementedError
         physics.named.model.geom_size['base'] = random_size
-
 
     def set_random_model_color(self, physics):
         random_color = np.random.uniform(0., 1., size=(4,))

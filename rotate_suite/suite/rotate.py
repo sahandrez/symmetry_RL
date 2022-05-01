@@ -219,7 +219,7 @@ class Rotate(base.Task):
         if obj_type in [enums.mjtGeom.mjGEOM_BOX]:
             length = np.random.uniform(0.25, 0.30)
             random_size = np.array([length, length, length])
-        elif obj_type in [enums.mjtGeom.mjGEOM_CAPSULE, enums.mjtGeom.mjGEOM_CYLINDER]:
+        elif obj_type in [enums.mjtGeom.mjGEOM_CYLINDER]:
             # Size for these geom types need a dummy variable at the end
             radius = np.random.uniform(0.20, 0.25)
             length = np.random.uniform(0.35, 0.40)

@@ -19,8 +19,8 @@
     </worldbody>
 
     <actuator>
-        <motor name="ball_motor_1" joint="ball_1" gear=".1 0 0" ctrlrange="-1 1" ctrllimited="true"/>
-        <motor name="ball_motor_2" joint="ball_1" gear="0 .1 0" ctrlrange="-1 1" ctrllimited="true"/>
-        <motor name="ball_motor_3" joint="ball_1" gear="0 0 .1" ctrlrange="-1 1" ctrllimited="true"/>
+        <motor name="ball_motor_1" jointinparent="ball_1" gear=".1 0 0" ctrlrange="-1 1" ctrllimited="true"/>
+        <motor name="ball_motor_2" jointinparent="ball_1" gear="0 .1 0" ctrlrange="-1 1" ctrllimited="true"/>
+        <motor name="ball_motor_3" jointinparent="ball_1" gear="0 0 .1" ctrlrange="-1 1" ctrllimited="true"/>
     </actuator>
 </mujoco>

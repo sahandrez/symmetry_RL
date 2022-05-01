@@ -7,7 +7,7 @@ from dm_control import mujoco
 from dm_control.rl import control
 from dm_control.suite import base
 from rotate_suite.suite import common
-from dm_control.utils import containers
+from dm_control.utils import containers, transformations
 import dm_control.mujoco.wrapper.mjbindings.enums as enums
 
 
@@ -155,6 +155,8 @@ class Rotate(base.Task):
         self.render_kwargs = render_kwargs
         self._observation_key = observation_key
         self._reward_coeff = 0.1
+        self._success_reward = 10.0
+        self._time_step_reward = -1.0
 
         self._current_obs = None
         self._goal_image = None
@@ -171,7 +173,8 @@ class Rotate(base.Task):
         if self.randomize_goal:
             raise NotImplementedError
         else:
-            goal = [0.0, 0.0, 0.0]
+            # goal = [0.0, 0.0, 0.0]
+            goal = transformations.euler_to_quat([0., 0., 0.])
 
         if self.randomize_model_shape:
             self.set_random_model_shape(physics)
@@ -180,15 +183,12 @@ class Rotate(base.Task):
             self.set_random_model_color(physics)
 
         # Set the goal image
-        physics.named.data.qpos['hinge_1'] = goal[0]
-        physics.named.data.qpos['hinge_2'] = goal[1]
-        physics.named.data.qpos['hinge_3'] = goal[2]
+        physics.named.data.qpos['ball_1'] = goal
         self._goal_image = self.get_observation(physics)[self._observation_key]
 
         # Set the initial orientation of the object
-        physics.named.data.qpos['hinge_1'] = self.random.uniform(-np.pi, np.pi)
-        physics.named.data.qpos['hinge_2'] = self.random.uniform(-np.pi, np.pi)
-        physics.named.data.qpos['hinge_3'] = self.random.uniform(-np.pi, np.pi)
+        init_euler = self.random.uniform(-np.pi, np.pi, size=(3,))
+        physics.named.data.qpos['ball_1'] = transformations.euler_to_quat(init_euler)
 
         super().initialize_episode(physics)
 
@@ -211,25 +211,32 @@ class Rotate(base.Task):
 
     def get_reward(self, physics):
         goal_dist = np.abs(self._goal_image - self._current_obs).mean()
-        reward = 1.0 - np.tanh(self._reward_coeff * goal_dist)
+        reward = self._time_step_reward + self._success_reward * (1.0 - np.tanh(self._reward_coeff * goal_dist))
         return reward
 
     def set_random_model_shape(self, physics):
         obj_type = physics.named.model.geom_type['base']
         if obj_type in [enums.mjtGeom.mjGEOM_BOX]:
-            length = np.random.uniform(0.2, 0.4)
+            length = np.random.uniform(0.25, 0.30)
             random_size = np.array([length, length, length])
         elif obj_type in [enums.mjtGeom.mjGEOM_CAPSULE, enums.mjtGeom.mjGEOM_CYLINDER]:
             # Size for these geom types need a dummy variable at the end
-            radius = np.random.uniform(0.15, 0.4)
-            length = np.random.uniform(0.2, 0.35)
+            radius = np.random.uniform(0.20, 0.25)
+            length = np.random.uniform(0.35, 0.40)
+            random_size = np.array([radius, length, 0.0])
+        elif obj_type in [enums.mjtGeom.mjGEOM_CAPSULE]:
+            # Size for these geom types need a dummy variable at the end
+            radius = np.random.uniform(0.10, 0.15)
+            length = np.random.uniform(0.25, 0.30)
             random_size = np.array([radius, length, 0.0])
         elif obj_type in [enums.mjtGeom.mjGEOM_ELLIPSOID]:
-            random_size = np.random.uniform(0.2, 0.5, size=(3,))
+            x_1 = np.random.uniform(0.25, 0.30)
+            x_2 = x_1
+            x_3 = np.random.uniform(0.5, 0.6)
+            random_size = np.array([x_1, x_2, x_3])
         else:
             raise NotImplementedError
         physics.named.model.geom_size['base'] = random_size
-
 
     def set_random_model_color(self, physics):
         random_color = np.random.uniform(0., 1., size=(4,))

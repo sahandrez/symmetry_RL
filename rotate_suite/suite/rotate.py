@@ -155,7 +155,7 @@ class Rotate(base.Task):
         self.render_kwargs = render_kwargs
         self._observation_key = observation_key
         self._reward_coeff = 0.1
-        self._success_reward = 1000.0
+        self._success_reward = 10.0
         self._time_step_reward = -1.0
 
         self._current_obs = None
@@ -217,15 +217,23 @@ class Rotate(base.Task):
     def set_random_model_shape(self, physics):
         obj_type = physics.named.model.geom_type['base']
         if obj_type in [enums.mjtGeom.mjGEOM_BOX]:
-            length = np.random.uniform(0.2, 0.4)
+            length = np.random.uniform(0.25, 0.30)
             random_size = np.array([length, length, length])
         elif obj_type in [enums.mjtGeom.mjGEOM_CAPSULE, enums.mjtGeom.mjGEOM_CYLINDER]:
             # Size for these geom types need a dummy variable at the end
-            radius = np.random.uniform(0.15, 0.4)
-            length = np.random.uniform(0.2, 0.35)
+            radius = np.random.uniform(0.20, 0.25)
+            length = np.random.uniform(0.35, 0.40)
+            random_size = np.array([radius, length, 0.0])
+        elif obj_type in [enums.mjtGeom.mjGEOM_CAPSULE]:
+            # Size for these geom types need a dummy variable at the end
+            radius = np.random.uniform(0.10, 0.15)
+            length = np.random.uniform(0.25, 0.30)
             random_size = np.array([radius, length, 0.0])
         elif obj_type in [enums.mjtGeom.mjGEOM_ELLIPSOID]:
-            random_size = np.random.uniform(0.2, 0.5, size=(3,))
+            x_1 = np.random.uniform(0.25, 0.30)
+            x_2 = x_1
+            x_3 = np.random.uniform(0.5, 0.6)
+            random_size = np.array([x_1, x_2, x_3])
         else:
             raise NotImplementedError
         physics.named.model.geom_size['base'] = random_size

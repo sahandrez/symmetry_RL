@@ -173,7 +173,6 @@ class Rotate(base.Task):
         if self.randomize_goal:
             raise NotImplementedError
         else:
-            # goal = [0.0, 0.0, 0.0]
             goal = transformations.euler_to_quat([0., 0., 0.])
 
         if self.randomize_model_shape:
@@ -211,28 +210,29 @@ class Rotate(base.Task):
 
     def get_reward(self, physics):
         goal_dist = np.abs(self._goal_image - self._current_obs).mean()
-        reward = self._time_step_reward + self._success_reward * (1.0 - np.tanh(self._reward_coeff * goal_dist))
+        # reward = self._time_step_reward + self._success_reward * (1.0 - np.tanh(self._reward_coeff * goal_dist))
+        reward = 1.0 - np.tanh(self._reward_coeff * goal_dist)
         return reward
 
     def set_random_model_shape(self, physics):
         obj_type = physics.named.model.geom_type['base']
         if obj_type in [enums.mjtGeom.mjGEOM_BOX]:
-            length = np.random.uniform(0.25, 0.30)
+            length = np.random.uniform(0.15, 0.30)
             random_size = np.array([length, length, length])
         elif obj_type in [enums.mjtGeom.mjGEOM_CYLINDER]:
             # Size for these geom types need a dummy variable at the end
-            radius = np.random.uniform(0.20, 0.25)
-            length = np.random.uniform(0.35, 0.40)
-            random_size = np.array([radius, length, 0.0])
+            radius = np.random.uniform(0.15, 0.25)
+            length = np.random.uniform(0.25, 0.45)
+            random_size = np.array([radius, length, 1.])
         elif obj_type in [enums.mjtGeom.mjGEOM_CAPSULE]:
             # Size for these geom types need a dummy variable at the end
-            radius = np.random.uniform(0.10, 0.15)
-            length = np.random.uniform(0.25, 0.30)
-            random_size = np.array([radius, length, 0.0])
+            radius = np.random.uniform(0.15, 0.25)
+            length = np.random.uniform(0.25, 0.45)
+            random_size = np.array([radius, length, 1.])
         elif obj_type in [enums.mjtGeom.mjGEOM_ELLIPSOID]:
-            x_1 = np.random.uniform(0.25, 0.30)
+            x_1 = np.random.uniform(0.2, 0.3)
             x_2 = x_1
-            x_3 = np.random.uniform(0.5, 0.6)
+            x_3 = np.random.uniform(0.4, 0.6)
             random_size = np.array([x_1, x_2, x_3])
         else:
             raise NotImplementedError

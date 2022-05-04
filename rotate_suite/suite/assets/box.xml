@@ -14,7 +14,7 @@
         <camera name="lookat" mode="targetbodycom" target="base" pos="0 -1.5 2"/>
         <body name="base" pos="0 0 1">
             <joint name="ball_1" type="ball" damping="0.05"/>
-            <geom name="base" material="self" type="box" pos="0 0 0" size="0.3 0.3 0.3" mass="1"/>
+            <geom name="base" material="self" type="box" pos="0 0 0" size="0.2 0.2 0.2" mass="1"/>
         </body>
     </worldbody>
 

@@ -239,7 +239,7 @@ class Rotate(base.Task):
         physics.named.model.geom_size['base'] = random_size
 
     def set_random_model_color(self, physics):
-        random_color = np.random.uniform(0., 1., size=(4,))
+        random_color = np.random.uniform(0.2, 1., size=(4,))
         random_color[-1] = 1.
         physics.named.model.geom_rgba['base'] = random_color
 

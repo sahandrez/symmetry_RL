@@ -155,7 +155,7 @@ class Rotate(base.Task):
         self.render_kwargs = render_kwargs
         self._observation_key = observation_key
         self._reward_coeff = 0.1
-        self._success_reward = 10.0
+        self._success_reward = 1.0
         self._time_step_reward = -1.0
 
         self._current_obs = None
@@ -210,8 +210,8 @@ class Rotate(base.Task):
 
     def get_reward(self, physics):
         goal_dist = np.abs(self._goal_image - self._current_obs).mean()
-        # reward = self._time_step_reward + self._success_reward * (1.0 - np.tanh(self._reward_coeff * goal_dist))
-        reward = 1.0 - np.tanh(self._reward_coeff * goal_dist)
+        reward = self._time_step_reward + self._success_reward * (1.0 - np.tanh(self._reward_coeff * goal_dist))
+        # reward = 1.0 - np.tanh(self._reward_coeff * goal_dist)
         return reward
 
     def set_random_model_shape(self, physics):
@@ -239,7 +239,7 @@ class Rotate(base.Task):
         physics.named.model.geom_size['base'] = random_size
 
     def set_random_model_color(self, physics):
-        random_color = np.random.uniform(0., 1., size=(4,))
+        random_color = np.random.uniform(0.2, 1., size=(4,))
         random_color[-1] = 1.
         physics.named.model.geom_rgba['base'] = random_color
 

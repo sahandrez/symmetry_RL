@@ -40,7 +40,7 @@ setup(
     name='rotate_suite',
     py_modules=['rotate_suite'],
     install_requires=[
-        'dm-control',
+        'dm-control=1.0.12',
         'absl-py>=0.7.0',
         'dm-env',
         'future',
